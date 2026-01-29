@@ -34,8 +34,8 @@ public class HelloApplication extends GameApplication {
     protected void initSettings(GameSettings settings) {
         settings.setWidth(1280);
         settings.setHeight(720);
-        settings.setTitle("Flappy Bird Clone");
-        settings.setVersion("1.0");
+        settings.setTitle("DashDash");
+        settings.setVersion("0.0.1");
         settings.setMainMenuEnabled(false); // Optional: keeps it simple for testing
     }
 
@@ -67,25 +67,40 @@ public class HelloApplication extends GameApplication {
     @Override
     protected void initGame() {
         initBackground();
+        entityBuilder()
+                .with(new Floor())
+                .buildAndAttach();
         initPlayer();
     }
-
     @Override
     protected void initPhysics() {
-        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, WALL) {
+        // PHYSICS FOR FLOOR: Land safely
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, EntityType.FLOOR) {
+            @Override
+            protected void onCollision(Entity player, Entity floor) {
+                // Snap player to the top of the floor so they don't sink in
+                player.setY(floor.getY() - player.getHeight());
+
+                // Tell the component we are on solid ground
+                playerComponent.stopFalling();
+            }
+        });
+
+        // PHYSICS FOR WALL: Restart game
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, EntityType.WALL) {
             @Override
             protected void onCollisionBegin(Entity player, Entity wall) {
                 requestNewGame();
             }
         });
     }
-
+    
     @Override
     protected void initUI() {
         Text uiScore = new Text("");
         uiScore.setFont(Font.font(72));
         uiScore.setTranslateX(getAppWidth() - 200);
-        uiScore.setTranslateY(50);
+        uiScore.setTranslateY(60);
 
         uiScore.fillProperty().bind(getop("stageColor"));
         uiScore.textProperty().bind(getip("score").asString());
@@ -93,7 +108,7 @@ public class HelloApplication extends GameApplication {
         addUINode(uiScore);
 
         Group dpadView = getInput().createVirtualDpadView();
-        addUINode(dpadView, 0, 625);
+        addUINode(dpadView, 50, 425);
     }
 
     @Override
@@ -127,8 +142,6 @@ public class HelloApplication extends GameApplication {
 
     private void initPlayer() {
         playerComponent = new PlayerComponent();
-
-        // Using .buildAndAttach() ensures the entity is added to the GameWorld
         Entity player = entityBuilder()
                 .at(100, 100)
                 .type(PLAYER)
