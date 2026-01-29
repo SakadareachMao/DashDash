@@ -1,19 +1,168 @@
 package com.group.game.dashdash;
 
-import javafx.application.Application;
-import javafx.fxml.FXMLLoader;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
+import com.almasb.fxgl.animation.Interpolators;
+import com.almasb.fxgl.app.GameApplication;
+import com.almasb.fxgl.app.GameSettings;
+import com.almasb.fxgl.entity.Entity;
+import com.almasb.fxgl.physics.CollisionHandler;
+import com.almasb.fxgl.input.UserAction;
+import com.almasb.fxgl.input.virtual.VirtualButton;
+import com.almasb.fxgl.physics.BoundingShape;
+import com.almasb.fxgl.physics.HitBox;
+import javafx.geometry.Point2D;
+import javafx.scene.Group;
+import javafx.scene.input.KeyCode;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
+import javafx.util.Duration;
 
-import java.io.IOException;
+import java.util.Map;
 
-public class HelloApplication extends Application {
+import static com.almasb.fxgl.dsl.FXGLForKtKt.*;
+import static com.group.game.dashdash.EntityType.PLAYER;
+import static com.group.game.dashdash.EntityType.WALL;
+
+
+public class HelloApplication extends GameApplication {
+
+    private PlayerComponent playerComponent;
+    private boolean requestNewGame = false;
+
     @Override
-    public void start(Stage stage) throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("hello-view.fxml"));
-        Scene scene = new Scene(fxmlLoader.load(), 320, 240);
-        stage.setTitle("Hello!");
-        stage.setScene(scene);
-        stage.show();
+    protected void initSettings(GameSettings settings) {
+        settings.setWidth(1280);
+        settings.setHeight(720);
+        settings.setTitle("Flappy Bird Clone");
+        settings.setVersion("1.0");
+        settings.setMainMenuEnabled(false); // Optional: keeps it simple for testing
+    }
+
+    @Override
+    protected void initInput() {
+        getInput().addAction(new UserAction("Jump") {
+            @Override
+            protected void onActionBegin() {
+                // Check for null to prevent crashes during restarts
+                if (playerComponent != null) {
+                    playerComponent.jump();
+                }
+            }
+        }, KeyCode.SPACE, VirtualButton.UP);
+    }
+
+    @Override
+    protected void initGameVars(Map<String, Object> vars) {
+        vars.put("stageColor", Color.BLACK);
+        vars.put("score", 0);
+    }
+
+    @Override
+    protected void onPreInit() {
+        // Ensure assets/music/bgm.mp3 exists
+        loopBGM("bgm.mp3");
+    }
+
+    @Override
+    protected void initGame() {
+        initBackground();
+        initPlayer();
+    }
+
+    @Override
+    protected void initPhysics() {
+        getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, WALL) {
+            @Override
+            protected void onCollisionBegin(Entity player, Entity wall) {
+                requestNewGame();
+            }
+        });
+    }
+
+    @Override
+    protected void initUI() {
+        Text uiScore = new Text("");
+        uiScore.setFont(Font.font(72));
+        uiScore.setTranslateX(getAppWidth() - 200);
+        uiScore.setTranslateY(50);
+
+        uiScore.fillProperty().bind(getop("stageColor"));
+        uiScore.textProperty().bind(getip("score").asString());
+
+        addUINode(uiScore);
+
+        Group dpadView = getInput().createVirtualDpadView();
+        addUINode(dpadView, 0, 625);
+    }
+
+    @Override
+    protected void onUpdate(double tpf) {
+        if (requestNewGame) {
+            requestNewGame = false;
+            getGameController().startNewGame();
+            return; // Exit update early if restarting
+        }
+
+        // Optional: Only increment score if player is actually moving
+        inc("score", +1);
+
+        if (geti("score") == 3000) {
+            showGameOver();
+        }
+    }
+
+    private void initBackground() {
+        Rectangle rect = new Rectangle(getAppWidth(), getAppHeight(), Color.WHITE);
+
+        Entity bg = entityBuilder()
+                .view(rect)
+                .with("rect", rect)
+                .with(new ColorChangingComponent())
+                .buildAndAttach();
+
+        bg.xProperty().bind(getGameScene().getViewport().xProperty());
+        bg.yProperty().bind(getGameScene().getViewport().yProperty());
+    }
+
+    private void initPlayer() {
+        playerComponent = new PlayerComponent();
+
+        // Using .buildAndAttach() ensures the entity is added to the GameWorld
+        Entity player = entityBuilder()
+                .at(100, 100)
+                .type(PLAYER)
+                .bbox(new HitBox(BoundingShape.box(70, 60)))
+                .view(texture("bird.png").toAnimatedTexture(2, Duration.seconds(0.5)).loop())
+                .collidable()
+                .with(playerComponent, new WallBuildingComponent())
+                .buildAndAttach();
+
+        getGameScene().getViewport().setBounds(0, 0, Integer.MAX_VALUE, getAppHeight());
+        getGameScene().getViewport().bindToEntity(player, getAppWidth() / 3.0, getAppHeight() / 2.0);
+
+        // Standard FXGL way to animate an entity spawn in Java
+        animationBuilder()
+                .duration(Duration.seconds(0.86))
+                .interpolator(Interpolators.BOUNCE.EASE_OUT())
+                .scale(player)
+                .from(new Point2D(0, 0))
+                .to(new Point2D(1, 1))
+                .buildAndPlay();
+    }
+
+    public void requestNewGame() {
+        requestNewGame = true;
+    }
+
+    private void showGameOver() {
+        showMessage("Demo Over. Thanks for playing!", () -> {
+            getGameController().exit();
+            return null;
+        });
+    }
+
+    static void main(String[] args) {
+        launch(args);
     }
 }
