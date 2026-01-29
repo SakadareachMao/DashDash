@@ -43,13 +43,11 @@ public class HelloApplication extends GameApplication {
         getInput().addAction(new UserAction("Jump") {
             @Override
             protected void onActionBegin() {
-                // Use jump() instead of bounceDown()
-                // This will flap the player away from their current surface
                 if (playerComponent != null) {
-                    playerComponent.jump();
+                    playerComponent.flipGravity();
                 }
             }
-        }, KeyCode.SPACE, VirtualButton.UP);
+        }, KeyCode.SPACE);
     }
 
     @Override
@@ -77,14 +75,14 @@ public class HelloApplication extends GameApplication {
         getPhysicsWorld().addCollisionHandler(new CollisionHandler(PLAYER, EntityType.FLOOR) {
             @Override
             protected void onCollision(Entity player, Entity floor) {
-                boolean isCeiling = player.getY() < getAppHeight() / 2.0;
+                // Snap logic
+                if (player.getY() > getAppHeight() / 2.0) {
+                    player.setY(floor.getY() - player.getHeight());
+                } else {
+                    player.setY(floor.getBottomY());
+                }
 
-                // Snap to surface
-                if (isCeiling) player.setY(floor.getBottomY());
-                else player.setY(floor.getY() - player.getHeight());
-
-                // Tell the player component to lock gravity
-                playerComponent.setOnSurface(isCeiling);
+                playerComponent.setOnSurface(true);
             }
         });
 
@@ -149,7 +147,7 @@ public class HelloApplication extends GameApplication {
                 .bbox(new HitBox(BoundingShape.box(70, 60)))
                 .view(texture("bird.png").toAnimatedTexture(2, Duration.seconds(0.5)).loop())
                 .collidable()
-                .with(playerComponent, new WallBuildingComponent())
+                .with(playerComponent, new WallBuildingComponent(), new Floor())
                 .buildAndAttach();
 
         getGameScene().getViewport().setBounds(0, 0, Integer.MAX_VALUE, getAppHeight());

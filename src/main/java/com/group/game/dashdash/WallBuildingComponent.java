@@ -10,6 +10,7 @@ import static com.almasb.fxgl.dsl.FXGL.entityBuilder;
 public class WallBuildingComponent extends Component {
 
     private double lastWall = 1000;
+    private final double FLOOR_THICKNESS = 50; // Matches your Floor component
 
     @Override
     public void onUpdate(double tpf) {
@@ -20,35 +21,47 @@ public class WallBuildingComponent extends Component {
 
     private Rectangle wallView(double width, double height) {
         Rectangle wall = new Rectangle(width, height);
-        wall.setArcWidth(25);
-        wall.setArcHeight(25);
+        wall.setArcWidth(10);
+        wall.setArcHeight(10);
         wall.fillProperty().bind(FXGL.getWorldProperties().objectProperty("stageColor"));
         return wall;
     }
 
     private void buildWalls() {
-        double height = FXGL.getAppHeight();
-        double distance = height / 2;
+        double screenHeight = FXGL.getAppHeight();
+        double wallHeight = 120;
+        double wallWidth = 50;
 
-        for (int i = 1; i <= 10; i++) {
-            double topHeight = Math.random() * (height - distance);
+        for (int i = 1; i <= 5; i++) {
+            double spawnX = lastWall + i * 600;
 
-            entityBuilder()
-                    .at(lastWall + i * 500, 0 - 25)
-                    .type(EntityType.WALL)
-                    .viewWithBBox(wallView(50, topHeight))
-                    .with(new CollidableComponent(true))
-                    .buildAndAttach();
+            // Generate a random number between 0.0 and 1.0
+            double chance = Math.random();
 
-            entityBuilder()
-                    .at(lastWall + i * 500, 0 + topHeight + distance + 25)
-                    .type(EntityType.WALL)
-                    .viewWithBBox(wallView(50, height - distance - topHeight))
-                    .with(new CollidableComponent(true))
-                    .buildAndAttach();
+            if (chance < 0.4) {
+                // 40% chance: SPAWN ON FLOOR ONLY
+                entityBuilder()
+                        .at(spawnX, screenHeight - FLOOR_THICKNESS - wallHeight)
+                        .type(EntityType.WALL)
+                        .viewWithBBox(wallView(wallWidth, wallHeight))
+                        .with(new CollidableComponent(true))
+                        .buildAndAttach();
+
+            } else if (chance < 0.8) {
+                // 40% chance: SPAWN ON CEILING ONLY
+                entityBuilder()
+                        .at(spawnX, FLOOR_THICKNESS)
+                        .type(EntityType.WALL)
+                        .viewWithBBox(wallView(wallWidth, wallHeight))
+                        .with(new CollidableComponent(true))
+                        .buildAndAttach();
+
+            } else {
+                // 20% chance: SPAWN NOTHING (Empty space for the player to breathe)
+                // We do nothing here, leaving a gap in the obstacles
+            }
         }
 
-        lastWall += 10 * 500;
+        lastWall += 5 * 600;
     }
 }
-
