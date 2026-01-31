@@ -19,10 +19,12 @@ public class WallBuildingComponent extends Component {
         }
     }
 
-    private Rectangle wallView(double width, double height) {
-        Rectangle wall = new Rectangle(width, height);
-        wall.setArcWidth(10);
-        wall.setArcHeight(10);
+    private Polygon wallView(double width, double height) {
+        Polygon wall = new Polygon(
+                0.0, height,
+                width / 2, 0.0,   // sharp tip
+                width, height
+        );
         wall.fillProperty().bind(FXGL.getWorldProperties().objectProperty("stageColor"));
         return wall;
     }
