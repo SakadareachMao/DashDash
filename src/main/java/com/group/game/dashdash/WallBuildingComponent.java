@@ -48,7 +48,7 @@ public class WallBuildingComponent extends Component {
             entityBuilder()
                     .at(lastWall + i * 500, -25)
                     .type(EntityType.WALL)
-                    .viewWithBBox(wallView(50, topHeight))
+                    .viewWithBBox(spikeViewDown(75, topHeight))
                     .with(new CollidableComponent(true))
                     .buildAndAttach();
 
