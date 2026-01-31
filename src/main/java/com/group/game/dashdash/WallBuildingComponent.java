@@ -3,7 +3,7 @@ package com.group.game.dashdash;
 import com.almasb.fxgl.dsl.FXGL;
 import com.almasb.fxgl.entity.component.Component;
 import com.almasb.fxgl.entity.components.CollidableComponent;
-import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Polygon;
 
 import static com.almasb.fxgl.dsl.FXGL.entityBuilder;
 
