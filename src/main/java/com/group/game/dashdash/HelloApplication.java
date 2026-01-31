@@ -139,19 +139,28 @@ public class HelloApplication extends GameApplication {
 
     private void initPlayer() {
         playerComponent = new PlayerComponent();
+
+        Rectangle cube = new Rectangle(70, 60);
+        cube.setFill(Color.DODGERBLUE);   // change color if you want
+        cube.setArcWidth(6);              // optional: rounded corners
+        cube.setArcHeight(6);
+
         Entity player = entityBuilder()
                 .at(100, 100)
                 .type(PLAYER)
                 .bbox(new HitBox(BoundingShape.box(70, 60)))
-                .view(texture("player.png").toAnimatedTexture(2, Duration.seconds(0.5)).loop())
+                .view(cube)
                 .collidable()
                 .with(playerComponent, new WallBuildingComponent(), new Floor())
                 .buildAndAttach();
 
         getGameScene().getViewport().setBounds(0, 0, Integer.MAX_VALUE, getAppHeight());
-        getGameScene().getViewport().bindToEntity(player, getAppWidth() / 3.0, getAppHeight() / 2.0);
+        getGameScene().getViewport().bindToEntity(
+                player,
+                getAppWidth() / 3.0,
+                getAppHeight() / 2.0
+        );
 
-        // Standard FXGL way to animate an entity spawn in Java
         animationBuilder()
                 .duration(Duration.seconds(0.86))
                 .interpolator(Interpolators.BOUNCE.EASE_OUT())
@@ -160,6 +169,7 @@ public class HelloApplication extends GameApplication {
                 .to(new Point2D(1, 1))
                 .buildAndPlay();
     }
+
 
     public void requestNewGame() {
         requestNewGame = true;
