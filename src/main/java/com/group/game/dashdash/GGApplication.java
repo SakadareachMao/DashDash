@@ -135,6 +135,7 @@ public class GGApplication extends GameApplication {
                 showWinMessage();
             }
         }
+        // In Endless mode, the score just keeps going forever!
     }
 
     private void initBackground() {
@@ -168,7 +169,11 @@ public class GGApplication extends GameApplication {
                 .buildAndAttach();
 
         getGameScene().getViewport().setBounds(0, 0, Integer.MAX_VALUE, getAppHeight());
-        getGameScene().getViewport().bindToEntity(player, getAppWidth() / 3.0, getAppHeight() / 2.0);
+        getGameScene().getViewport().bindToEntity(
+                player,
+                getAppWidth() / 3.0,
+                getAppHeight() / 2.0
+        );
 
         animationBuilder()
                 .duration(Duration.seconds(0.86))
