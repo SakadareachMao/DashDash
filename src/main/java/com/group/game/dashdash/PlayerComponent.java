@@ -2,6 +2,7 @@ package com.group.game.dashdash;
 
 import com.almasb.fxgl.core.math.Vec2;
 import com.almasb.fxgl.entity.component.Component;
+import static com.almasb.fxgl.dsl.FXGL.*;
 
 public class PlayerComponent extends Component {
 
@@ -14,7 +15,19 @@ public class PlayerComponent extends Component {
     private double maxSpeed = 1200;   // maximum horizontal speed
 
     @Override
+    public void onAdded() {
+        // Read mode and level from GameVars
+        GameMode mode = geto("mode");
+        int level = geti("level");
+
+        // Set base speed: Level 1=450, Level 2=500, Level 3=550
+        float speed = (mode == GameMode.Classic) ? (400f + (level * 50f)) : 400f;
+        velocity.x = speed;
+    }
+
+    @Override
     public void onUpdate(double tpf) {
+<<<<<<< HEAD
 
         // --- Increase horizontal speed gradually ---
         if (velocity.x < maxSpeed) {
@@ -30,6 +43,19 @@ public class PlayerComponent extends Component {
         // Cap vertical speed
         if (Math.abs(velocity.y) > 500) {
             velocity.y = (float) (2000 * gravityDirection);
+=======
+        // 1. If Endless, slowly increase speed over time
+        if (geto("mode") == GameMode.Endless) {
+            velocity.x += (float) (5 * tpf);
+        }
+
+        // 2. Apply gravity
+        velocity.y += (float) (GRAVITY_FORCE * gravityDirection * tpf);
+
+        // 3. Cap vertical speed (Increased to 700 to match higher horizontal speeds)
+        if (Math.abs(velocity.y) > 700) {
+            velocity.y = (float) (700 * gravityDirection);
+>>>>>>> master
         }
 
         // Move player
@@ -44,7 +70,12 @@ public class PlayerComponent extends Component {
             gravityDirection *= -1;
             onSurface = false;
 
+<<<<<<< HEAD
             // Launch player instantly
+=======
+            // Launch the player to the other side
+            // We scale the launch speed slightly with horizontal speed for better feel
+>>>>>>> master
             velocity.y = (float) (1200 * gravityDirection);
             entity.setScaleY(gravityDirection);
         }
