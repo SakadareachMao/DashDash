@@ -28,8 +28,7 @@ Contributors names and contact info
 
 Lead Developer - @Minkaln
 ex. [@Minkaln](https://www.facebook.com/profile.php?id=61565158614125)
-
-
+- Sakadareach Mao - https://www.facebook.com/sakadareach.mao/
 ## Acknowledgments
 
 Inspiration, code snippets, etc.
