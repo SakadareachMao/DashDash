@@ -1,12 +1,12 @@
 module com.group.game.dashdash {
     requires javafx.controls;
     requires javafx.fxml;
-    requires javafx.media; // Add this just in case!
+    requires javafx.media;
 
     requires org.controlsfx.controls;
     requires com.almasb.fxgl.all;
     requires annotations;
-    requires javafx.media;
+
 
     // This allows FXGL to see your code
     opens com.group.game.dashdash to javafx.fxml, com.almasb.fxgl.core;
