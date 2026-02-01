@@ -4,17 +4,22 @@ import com.almasb.fxgl.animation.Interpolators;
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.entity.Entity;
-import com.almasb.fxgl.physics.CollisionHandler;
 import com.almasb.fxgl.input.UserAction;
+import com.almasb.fxgl.physics.CollisionHandler;
 import com.almasb.fxgl.physics.BoundingShape;
 import com.almasb.fxgl.physics.HitBox;
 import javafx.geometry.Point2D;
 import javafx.scene.input.KeyCode;
+import javafx.scene.Group;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import javafx.util.Duration;
+import javafx.scene.media.Media;
+import javafx.scene.media.MediaPlayer;
 
 import java.util.Map;
 
@@ -41,6 +46,7 @@ public class GGApplication extends GameApplication {
         settings.setMainMenuEnabled(true);
         settings.setSceneFactory(new MenuFactory());
     }
+
     @Override
     protected void onPreInit() {
         audioManager = new AudioManager();
@@ -83,9 +89,41 @@ public class GGApplication extends GameApplication {
 
     @Override
     protected void initGame() {
-        initBackground();
-        entityBuilder().with(new Floor()).buildAndAttach();
+        initBackground();   // 🖼 PNG background
+
+        entityBuilder()
+                .with(new Floor())
+                .buildAndAttach();
+
         initPlayer();
+    }
+
+
+    // 🖼 PNG BACKGROUND (FIXED)
+    private void initBackground() {
+        var url = getClass().getResource("/assets/textures/background.png");
+
+        if (url == null) {
+            System.out.println("❌ Background image not found");
+            return;
+        }
+
+        Image bgImage = new Image(url.toExternalForm());
+        // 🖼 Keep background alive
+        ImageView backgroundView = new ImageView(bgImage);
+
+        backgroundView.setFitWidth(getAppWidth());
+        backgroundView.setFitHeight(getAppHeight());
+        backgroundView.setPreserveRatio(false);
+
+        Entity bg = entityBuilder()
+                .view(backgroundView)
+                .zIndex(-100) // stay behind everything
+                .buildAndAttach();
+
+        // Follow camera
+        bg.xProperty().bind(getGameScene().getViewport().xProperty());
+        bg.yProperty().bind(getGameScene().getViewport().yProperty());
     }
 
     @Override
@@ -185,34 +223,48 @@ public class GGApplication extends GameApplication {
         requestNewGame = true;
     }
 
-    // ... initBackground, initPlayer, and main remain the same ...
-
-    private void initBackground() {
-        Rectangle rect = new Rectangle(getAppWidth(), getAppHeight(), Color.WHITE);
-        Entity bg = entityBuilder()
-                .view(rect)
-                .with("rect", rect)
-                .with(new ColorChangingComponent())
-                .buildAndAttach();
-
-        bg.xProperty().bind(getGameScene().getViewport().xProperty());
-        bg.yProperty().bind(getGameScene().getViewport().yProperty());
-    }
 
     private void initPlayer() {
         playerComponent = new PlayerComponent();
+
+        // 🟦 Player body
         Rectangle cube = new Rectangle(70, 60);
         cube.setFill(Color.DODGERBLUE);
         cube.setArcWidth(6);
         cube.setArcHeight(6);
 
+        // 👀 Eyes
+        Rectangle leftEye = new Rectangle(8, 8, Color.BLACK);
+        Rectangle rightEye = new Rectangle(8, 8, Color.BLACK);
+
+        leftEye.setTranslateX(18);
+        leftEye.setTranslateY(18);
+
+        rightEye.setTranslateX(44);
+        rightEye.setTranslateY(18);
+
+        // 👄 Mouth (._.)
+        Text mouth = new Text("O");
+        mouth.setFill(Color.BLACK);
+        mouth.setStyle("-fx-font-size: 14px; -fx-font-weight: bold;");
+        mouth.setTranslateX(26);
+        mouth.setTranslateY(42);
+
+        // 🧩 Combine face + body
+        Group playerView = new Group(
+                cube,
+                leftEye,
+                rightEye,
+                mouth
+        );
+
         Entity player = entityBuilder()
                 .at(0, 0)
                 .type(PLAYER)
                 .bbox(new HitBox(BoundingShape.box(70, 60)))
-                .view(cube)
+                .view(playerView)
                 .collidable()
-                .with(playerComponent, new WallBuildingComponent(), new Floor())
+                .with(playerComponent, new WallBuildingComponent(),new Floor())
                 .buildAndAttach();
 
         getGameScene().getViewport().setBounds(0, 0, Integer.MAX_VALUE, getAppHeight());
