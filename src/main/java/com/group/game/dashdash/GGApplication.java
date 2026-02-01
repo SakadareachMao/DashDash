@@ -4,6 +4,7 @@ import com.almasb.fxgl.animation.Interpolators;
 import com.almasb.fxgl.app.GameApplication;
 import com.almasb.fxgl.app.GameSettings;
 import com.almasb.fxgl.entity.Entity;
+import com.almasb.fxgl.input.UserAction;
 import com.almasb.fxgl.physics.CollisionHandler;
 import com.almasb.fxgl.physics.BoundingShape;
 import com.almasb.fxgl.physics.HitBox;
@@ -222,19 +223,6 @@ public class GGApplication extends GameApplication {
         requestNewGame = true;
     }
 
-    // ... initBackground, initPlayer, and main remain the same ...
-
-    private void initBackground() {
-        Rectangle rect = new Rectangle(getAppWidth(), getAppHeight(), Color.WHITE);
-        Entity bg = entityBuilder()
-                .view(rect)
-                .with("rect", rect)
-                .with(new ColorChangingComponent())
-                .buildAndAttach();
-
-        bg.xProperty().bind(getGameScene().getViewport().xProperty());
-        bg.yProperty().bind(getGameScene().getViewport().yProperty());
-    }
 
     private void initPlayer() {
         playerComponent = new PlayerComponent();
@@ -276,7 +264,7 @@ public class GGApplication extends GameApplication {
                 .bbox(new HitBox(BoundingShape.box(70, 60)))
                 .view(playerView)
                 .collidable()
-                .with(playerComponent, new WallBuildingComponent())
+                .with(playerComponent, new WallBuildingComponent(),new Floor())
                 .buildAndAttach();
 
         getGameScene().getViewport().setBounds(0, 0, Integer.MAX_VALUE, getAppHeight());
