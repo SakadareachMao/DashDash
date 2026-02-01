@@ -135,7 +135,12 @@ public class GGApplication extends GameApplication {
     }
 
     private void initBackground() {
-        Rectangle rect = new Rectangle(getAppWidth(), getAppHeight(), Color.WHITE);
+        var url = getClass().getResource("/assets/textures/gd_bg3.jpg");
+
+        if (url == null) {
+            System.out.println("❌ Background image not found");
+            return;
+        }
 
         Entity bg = entityBuilder()
                 .view(rect)
