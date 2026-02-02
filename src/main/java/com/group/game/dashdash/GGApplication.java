@@ -101,7 +101,7 @@ public class GGApplication extends GameApplication {
 
     // 🖼 PNG BACKGROUND (FIXED)
     private void initBackground() {
-        var url = getClass().getResource("/assets/textures/background.png");
+        var url = getClass().getResource("/assets/textures/gd_bg3.jpg");
 
         if (url == null) {
             System.out.println("❌ Background image not found");
@@ -158,7 +158,7 @@ public class GGApplication extends GameApplication {
         uiScore.setFont(Font.font(72));
         uiScore.setTranslateX(getAppWidth() - 200);
         uiScore.setTranslateY(100); // Shifted up slightly
-        uiScore.fillProperty().bind(getop("stageColor"));
+        uiScore.setFill(Color.WHITE);
         uiScore.textProperty().bind(getip("score").asString());
 
         // 3. High Score Display
@@ -166,7 +166,7 @@ public class GGApplication extends GameApplication {
         uiHighscore.setFont(Font.font(24));
         uiHighscore.setTranslateX(getAppWidth() - 200);
         uiHighscore.setTranslateY(140);
-        uiHighscore.setFill(Color.GRAY);
+        uiHighscore.setFill(Color.WHITE);
         uiHighscore.textProperty().bind(getip("highscore").asString().concat(" (Best)"));
 
         addUINode(uiScore);

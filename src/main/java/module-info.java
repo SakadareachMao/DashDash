@@ -6,6 +6,7 @@ module com.group.game.dashdash {
     requires org.controlsfx.controls;
     requires com.almasb.fxgl.all;
     requires annotations;
+    requires java.desktop;
 
 
     // This allows FXGL to see your code
